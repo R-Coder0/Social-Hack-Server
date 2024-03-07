@@ -63,16 +63,27 @@ app.use("/posts", postRoutes);
 
 /* MONGOOSE SETUP */
 const PORT = process.env.PORT || 6001;
+
 mongoose
   .connect(process.env.MONGO_URL, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
   .then(() => {
-    app.listen(PORT, () => console.log(`Server Port: ${PORT}`));
+    console.log('Connected to MongoDB');
+    
+    // Add event listener for the first connection to perform initialization tasks
+    mongoose.connection.once('open', () => {
+      console.log('MongoDB connection opened');
+      
+      /* ADD DATA ONE TIME */
+      // User.insertMany(users);
+      // Post.insertMany(posts);
+    });
 
-    /* ADD DATA ONE TIME */
-    // User.insertMany(users);
-    // Post.insertMany(posts);
+    app.listen(PORT, () => console.log(`Server Port: ${PORT}`));
   })
-  .catch((error) => console.log(`${error} did not connect`));
+  .catch((error) => {
+    console.error(`Error connecting to MongoDB: ${error}`);
+    // Handle the error appropriately, you might want to exit the process or perform some fallback logic.
+  });
